@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XeroQ — Campus Print Pre-Order</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161922;
+    --surface2: #1e2230;
+    --border: #2a2f3e;
+    --accent: #f5c518;
+    --accent2: #ff6b35;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --success: #22c55e;
+    --error: #ef4444;
+    --blue: #4f8ef7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── PAGE SYSTEM ─── */
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: flex; flex-direction: column; }
+
+  /* ─── LOGIN PAGE ─── */
+  #loginPage {
+    background: var(--bg);
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .login-bg {
+    position: absolute; inset: 0; overflow: hidden; z-index: 0;
+  }
+  .login-bg::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, #f5c51820 0%, transparent 70%);
+    top: -200px; right: -100px;
+    animation: pulse 6s ease-in-out infinite;
+  }
+  .login-bg::after {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, #ff6b3515 0%, transparent 70%);
+    bottom: -100px; left: -100px;
+    animation: pulse 8s ease-in-out infinite reverse;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    z-index: 1;
+    animation: slideUp 0.5s ease;
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(30px);} to{opacity:1;transform:translateY(0);} }
+
+  .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: var(--accent);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; color: var(--text); letter-spacing: -1px; }
+  .logo-text span { color: var(--accent); }
+
+  .login-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .login-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+
+  .form-group { margin-bottom: 18px; }
+  .form-label { font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 6px; display: block; letter-spacing: 0.5px; text-transform: uppercase; }
+  .form-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input::placeholder { color: var(--muted); }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary:hover { background: #ffd340; transform: translateY(-1px); box-shadow: 0 8px 20px #f5c51840; }
+  .btn-primary:active { transform: translateY(0); }
+
+  .divider { text-align: center; color: var(--muted); font-size: 13px; margin: 16px 0; }
+  .login-footer { text-align: center; font-size: 13px; color: var(--muted); margin-top: 16px; }
+  .login-footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+
+  /* ─── DASHBOARD LAYOUT ─── */
+  #dashPage { flex-direction: row; }
+
+  .sidebar {
+    width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    flex-shrink: 0;
+  }
+  .sidebar-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 36px; padding: 0 8px; }
+  .sidebar-logo .logo-text { font-size: 20px; }
+
+  .nav-section { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; padding: 0 8px; margin-bottom: 8px; margin-top: 16px; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: #f5c51818; color: var(--accent); }
+  .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .sidebar-bottom { margin-top: auto; }
+  .user-chip {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .avatar {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #000;
+    flex-shrink: 0;
+  }
+  .user-info { flex: 1; overflow: hidden; }
+  .user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 11px; color: var(--muted); }
+
+  /* ─── MAIN CONTENT ─── */
+  .main-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px;
+    background: var(--bg);
+  }
+
+  /* ─── SECTION SYSTEM ─── */
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+
+  .section-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.5px; }
+  .section-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+
+  /* ─── STATS CARDS ─── */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::after {
+    content: attr(data-icon);
+    position: absolute; right: 16px; top: 16px;
+    font-size: 28px; opacity: 0.15;
+  }
+  .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; }
+  .stat-value.accent { color: var(--accent); }
+  .stat-value.orange { color: var(--accent2); }
+  .stat-value.blue { color: var(--blue); }
+  .stat-value.green { color: var(--success); }
+
+  /* ─── ORDERS TABLE ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title { font-weight: 700; font-size: 15px; }
+  .badge {
+    font-size: 11px; font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--surface2);
+    color: var(--accent);
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 20px;
+    background: var(--surface2);
+  }
+  td { padding: 14px 20px; font-size: 14px; border-top: 1px solid var(--border); }
+  tr:hover td { background: #ffffff05; }
+
+  .status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .status-pending { background: #f5c51820; color: var(--accent); }
+  .status-ready { background: #22c55e20; color: var(--success); }
+  .status-collected { background: #6b728020; color: var(--muted); }
+
+  /* ─── UPLOAD SECTION ─── */
+  .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent);
+    background: #f5c51808;
+  }
+  .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+  .drop-icon { font-size: 40px; margin-bottom: 12px; }
+  .drop-title { font-weight: 700; font-size: 16px; margin-bottom: 6px; }
+  .drop-sub { color: var(--muted); font-size: 13px; }
+
+  .print-options { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+  .options-title { font-weight: 700; font-size: 15px; margin-bottom: 20px; }
+
+  .option-row { margin-bottom: 18px; }
+  .option-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; display: block; font-weight: 500; }
+  .toggle-group { display: flex; gap: 8px; }
+  .toggle-btn {
+    flex: 1; padding: 10px 8px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .toggle-btn.selected { border-color: var(--accent); background: #f5c51818; color: var(--accent); }
+
+  .number-input {
+    display: flex; align-items: center; gap: 0;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    width: fit-content;
+  }
+  .num-btn {
+    width: 36px; height: 36px;
+    background: var(--surface2);
+    border: none; color: var(--text);
+    cursor: pointer; font-size: 18px;
+    transition: background 0.15s;
+  }
+  .num-btn:hover { background: var(--border); }
+  .num-val {
+    width: 50px; text-align: center;
+    background: transparent; border: none;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px; font-weight: 700;
+    outline: none;
+  }
+
+  .cost-display {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .cost-label { font-size: 13px; color: var(--muted); }
+  .cost-value { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--accent); }
+
+  .uploaded-files { margin-top: 20px; }
+  .file-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    animation: slideUp 0.2s ease;
+  }
+  .file-icon { font-size: 22px; }
+  .file-name { flex: 1; font-size: 14px; font-weight: 500; }
+  .file-size { font-size: 12px; color: var(--muted); }
+  .file-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; transition: color 0.15s; }
+  .file-remove:hover { color: var(--error); }
+
+  /* ─── CONVERT SECTION ─── */
+  .convert-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .convert-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .convert-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px #f5c51820; }
+  .convert-card .icon { font-size: 32px; margin-bottom: 10px; }
+  .convert-card .ct-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .convert-card .ct-sub { font-size: 12px; color: var(--muted); }
+
+  .convert-workspace {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    margin-top: 20px;
+    display: none;
+  }
+  .convert-workspace.show { display: block; animation: fadeIn 0.3s ease; }
+  .convert-ws-title { font-weight: 700; font-size: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .convert-ws-title span { font-size: 20px; }
+
+  .convert-drop {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+  .convert-drop:hover { border-color: var(--accent); }
+  .convert-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+  .convert-drop-text { color: var(--muted); font-size: 14px; }
+  .convert-drop-text b { color: var(--accent); }
+
+  .convert-result {
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--bg);
+    border-radius: 10px;
+    display: none;
+  }
+  .convert-result.show { display: flex; align-items: center; gap: 12px; }
+  .btn-download {
+    background: var(--success);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-download:hover { background: #16a34a; transform: translateY(-1px); }
+
+  /* ─── PAYMENT SECTION ─── */
+  .payment-layout { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
+
+  .order-summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+  }
+  .summary-title { font-weight: 700; font-size: 16px; margin-bottom: 20px; }
+
+  .summary-item {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-item:last-of-type { border-bottom: none; }
+  .summary-file-icon { font-size: 24px; }
+  .summary-file-info { flex: 1; }
+  .summary-file-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .summary-file-meta { font-size: 12px; color: var(--muted); }
+  .summary-file-cost { font-weight: 700; color: var(--accent); }
+
+  .payment-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    height: fit-content;
+    position: sticky;
+    top: 32px;
+  }
+  .payment-title { font-weight: 700; font-size: 16px; margin-bottom: 20px; }
+
+  .price-breakdown { margin-bottom: 20px; }
+  .price-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px; }
+  .price-row.total { font-weight: 700; font-size: 16px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .price-row.total .amount { color: var(--accent); font-size: 20px; }
+
+  .payment-methods { margin-bottom: 20px; }
+  .pm-label { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .pm-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pm-option {
+    padding: 12px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .pm-option:hover { border-color: var(--accent); }
+  .pm-option.selected { border-color: var(--accent); background: #f5c51818; color: var(--accent); }
+  .pm-option .pm-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+
+  .upi-input-area { margin-bottom: 16px; display: none; }
+  .upi-input-area.show { display: block; animation: fadeIn 0.3s; }
+  .upi-id-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    outline: none;
+  }
+  .upi-id-input:focus { border-color: var(--accent); }
+
+  .btn-pay {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), #ffaa00);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 15px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-pay:hover { transform: translateY(-1px); box-shadow: 0 8px 24px #f5c51840; }
+
+  /* ─── SUCCESS MODAL ─── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #00000080;
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    animation: scaleIn 0.3s ease;
+  }
+  @keyframes scaleIn { from{opacity:0;transform:scale(0.9);} to{opacity:1;transform:scale(1);} }
+  .modal-icon { font-size: 56px; margin-bottom: 16px; }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .modal-sub { color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
+  .order-id-box {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 24px;
+  }
+  .modal-actions { display: flex; flex-direction: column; gap: 10px; }
+
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 12px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── NOTIFICATION ─── */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 14px;
+    z-index: 200;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px #00000040;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--success); }
+  .toast.error { border-color: var(--error); }
+  .toast.info { border-color: var(--blue); }
+
+  /* ─── STORE INFO STRIP ─── */
+  .store-strip {
+    background: #f5c51812;
+    border: 1px solid #f5c51830;
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .sidebar { width: 200px; }
+    .stats-grid { grid-template-columns: repeat(2,1fr); }
+    .upload-grid, .payment-layout { grid-template-columns: 1fr; }
+    .convert-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .sidebar { display: none; }
+    .main-content { padding: 20px; }
+    .convert-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ─── SKELETON EMPTY STATE ─── */
+  .empty-state {
+    text-align: center; padding: 48px;
+    color: var(--muted);
+  }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-state p { font-size: 14px; }
+
+  /* progress bar for convert */
+  .progress-bar-wrap { background: var(--bg); border-radius: 999px; height: 6px; margin: 14px 0; overflow: hidden; display: none; }
+  .progress-bar-wrap.show { display: block; }
+  .progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 999px; transition: width 0.4s; }
+
+  /* Page number input for print options */
+  select.form-input { appearance: none; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     LOGIN PAGE
+═══════════════════════════════════ -->
+<div id="loginPage" class="page active">
+  <div class="login-bg"></div>
+  <div class="login-card">
+    <div class="logo">
+      <div class="logo-icon">🖨️</div>
+      <div class="logo-text">Xero<span>Q</span></div>
+    </div>
+    <div class="login-title">Welcome back 👋</div>
+    <div class="login-sub">Sign in with your college ID to pre-order prints</div>
+
+    <div class="form-group">
+      <label class="form-label">College Roll Number</label>
+      <input class="form-input" id="rollInput" type="text" placeholder="e.g. 22CS1234" onkeypress="if(event.key==='Enter') doLogin()" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="passInput" type="password" placeholder="Enter your password" onkeypress="if(event.key==='Enter') doLogin()" />
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Sign In →</button>
+    <div class="divider">— or —</div>
+    <button class="btn-outline" style="width:100%;padding:12px;" onclick="demoLogin()">🚀 Demo Login (skip)</button>
+    <div class="login-footer">New student? <a href="#">Register here</a></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     DASHBOARD PAGE
+═══════════════════════════════════ -->
+<div id="dashPage" class="page">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon" style="width:36px;height:36px;font-size:16px;">🖨️</div>
+      <div class="logo-text" style="font-size:18px;">Xero<span>Q</span></div>
+    </div>
+
+    <div class="nav-section">Menu</div>
+    <div class="nav-item active" onclick="switchSection('home', this)">
+      <span class="nav-icon">🏠</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="switchSection('upload', this)">
+      <span class="nav-icon">📤</span> New Order
+    </div>
+    <div class="nav-item" onclick="switchSection('convert', this)">
+      <span class="nav-icon">🔄</span> Convert Files
+    </div>
+    <div class="nav-item" onclick="switchSection('payment', this)">
+      <span class="nav-icon">💳</span> Checkout
+    </div>
+    <div class="nav-section">Account</div>
+    <div class="nav-item" onclick="switchSection('orders', this)">
+      <span class="nav-icon">📋</span> My Orders
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="user-chip">
+        <div class="avatar" id="sidebarAvatar">?</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebarName">Student</div>
+          <div class="user-role">Student</div>
+        </div>
+        <span style="cursor:pointer;font-size:14px;color:var(--muted)" onclick="logout()" title="Logout">⎋</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+
+    <!-- ─── HOME ─── -->
+    <div class="section active" id="sec-home">
+      <div class="section-title">Good morning! 👋</div>
+      <div class="section-sub" id="homeWelcome">Here's your print activity at a glance.</div>
+
+      <div class="store-strip">
+        📍 <strong>Campus Print Store</strong> — GROUND FLOOR , SEIMENS BLOCK &nbsp;|&nbsp; ⏰ Open 8 AM – 6 PM &nbsp;|&nbsp; Show your order ID to collect copies
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card" data-icon="📋">
+          <div class="stat-label">Total Orders</div>
+          <div class="stat-value accent" id="statTotal">3</div>
+        </div>
+        <div class="stat-card" data-icon="⏳">
+          <div class="stat-label">Pending</div>
+          <div class="stat-value orange" id="statPending">1</div>
+        </div>
+        <div class="stat-card" data-icon="✅">
+          <div class="stat-label">Ready to Collect</div>
+          <div class="stat-value green" id="statReady">1</div>
+        </div>
+        <div class="stat-card" data-icon="💰">
+          <div class="stat-label">Total Spent</div>
+          <div class="stat-value blue" id="statSpent">₹24</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent Orders</div>
+          <span class="badge" id="orderCountBadge">3 orders</span>
+        </div>
+        <div id="recentOrdersTable">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>File</th>
+                <th>Type</th>
+                <th>Pages</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <tr>
+                <td><code style="color:var(--accent);font-size:12px;">XQ-8821</code></td>
+                <td>Assignment_3.pdf</td>
+                <td>Standard B&W</td>
+                <td>12</td>
+                <td>₹12</td>
+                <td><span class="status-pill status-ready">Ready ✓</span></td>
+              </tr>
+              <tr>
+                <td><code style="color:var(--accent);font-size:12px;">XQ-8819</code></td>
+                <td>Slides_Unit4.pdf</td>
+                <td>Color</td>
+                <td>8</td>
+                <td>₹16</td>
+                <td><span class="status-pill status-pending">Pending</span></td>
+              </tr>
+              <tr>
+                <td><code style="color:var(--accent);font-size:12px;">XQ-8801</code></td>
+                <td>Lab_Report.docx</td>
+                <td>Standard B&W</td>
+                <td>5</td>
+                <td>₹5</td>
+                <td><span class="status-pill status-collected">Collected</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── UPLOAD / NEW ORDER ─── -->
+    <div class="section" id="sec-upload">
+      <div class="section-title">New Print Order 📤</div>
+      <div class="section-sub">Upload your files and configure print settings</div>
+
+      <div class="upload-grid">
+        <div>
+          <div class="drop-zone" id="dropZone">
+            <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.ppt,.pptx" onchange="handleFiles(this.files)" />
+            <div class="drop-icon">📁</div>
+            <div class="drop-title">Drop files here</div>
+            <div class="drop-sub">PDF, DOC, DOCX, PPT, JPG, PNG<br>Max 20MB per file</div>
+          </div>
+          <div class="uploaded-files" id="uploadedFiles"></div>
+        </div>
+
+        <div class="print-options">
+          <div class="options-title">⚙️ Print Settings</div>
+
+          <div class="option-row">
+            <span class="option-label">Print Type</span>
+            <div class="toggle-group">
+              <button class="toggle-btn selected" id="bwBtn" onclick="selectType('bw')">⬛ B&W — ₹1/page</button>
+              <button class="toggle-btn" id="colorBtn" onclick="selectType('color')">🌈 Color — ₹2/page</button>
+            </div>
+          </div>
+
+          <div class="option-row">
+            <span class="option-label">Copies</span>
+            <div class="number-input">
+              <button class="num-btn" onclick="changeCopies(-1)">−</button>
+              <input class="num-val" id="copiesVal" type="number" value="1" min="1" max="50" oninput="updateCost()" />
+              <button class="num-btn" onclick="changeCopies(1)">+</button>
+            </div>
+          </div>
+
+          <div class="option-row">
+            <span class="option-label">Paper Size</span>
+            <div class="toggle-group">
+              <button class="toggle-btn selected" id="a4Btn" onclick="selectPaper('a4')">A4</button>
+              <button class="toggle-btn" id="a3Btn" onclick="selectPaper('a3')">A3</button>
+              <button class="toggle-btn" id="letBtn" onclick="selectPaper('letter')">Letter</button>
+            </div>
+          </div>
+
+          <div class="option-row">
+            <span class="option-label">Pages (estimated)</span>
+            <div class="number-input">
+              <button class="num-btn" onclick="changePages(-1)">−</button>
+              <input class="num-val" id="pagesVal" type="number" value="1" min="1" max="500" oninput="updateCost()" />
+              <button class="num-btn" onclick="changePages(1)">+</button>
+            </div>
+          </div>
+
+          <div class="option-row">
+            <span class="option-label">Binding</span>
+            <div class="toggle-group">
+              <button class="toggle-btn selected" id="noBindBtn" onclick="selectBind('none')">None</button>
+              <button class="toggle-btn" id="spiralBtn" onclick="selectBind('spiral')">Spiral (+₹15)</button>
+              <button class="toggle-btn" id="stapleBtn" onclick="selectBind('staple')">Staple (+₹2)</button>
+            </div>
+          </div>
+
+          <div class="cost-display">
+            <div>
+              <div class="cost-label">Estimated Total</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;" id="costBreakdown">1 page × 1 copy × ₹1</div>
+            </div>
+            <div class="cost-value" id="costDisplay">₹1</div>
+          </div>
+
+          <button class="btn-primary" style="margin-top:16px;" onclick="addToCart()">Add to Cart 🛒</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CONVERT ─── -->
+    <div class="section" id="sec-convert">
+      <div class="section-title">File Converter 🔄</div>
+      <div class="section-sub">Quickly convert files before printing</div>
+
+      <div class="convert-grid">
+        <div class="convert-card" onclick="openConverter('jpg-pdf')">
+          <div class="icon">🖼️→📄</div>
+          <div class="ct-title">JPG to PDF</div>
+          <div class="ct-sub">Merge images into PDF</div>
+        </div>
+        <div class="convert-card" onclick="openConverter('pdf-jpg')">
+          <div class="icon">📄→🖼️</div>
+          <div class="ct-title">PDF to JPG</div>
+          <div class="ct-sub">Extract pages as images</div>
+        </div>
+        <div class="convert-card" onclick="openConverter('word-pdf')">
+          <div class="icon">📝→📄</div>
+          <div class="ct-title">Word to PDF</div>
+          <div class="ct-sub">DOCX to print-ready PDF</div>
+        </div>
+        <div class="convert-card" onclick="openConverter('compress')">
+          <div class="icon">📦</div>
+          <div class="ct-title">Compress PDF</div>
+          <div class="ct-sub">Reduce file size</div>
+        </div>
+        <div class="convert-card" onclick="openConverter('merge')">
+          <div class="icon">📎</div>
+          <div class="ct-title">Merge PDFs</div>
+          <div class="ct-sub">Combine multiple PDFs</div>
+        </div>
+        <div class="convert-card" onclick="openConverter('rotate')">
+          <div class="icon">🔃</div>
+          <div class="ct-title">Rotate PDF</div>
+          <div class="ct-sub">Fix page orientation</div>
+        </div>
+      </div>
+
+      <div class="convert-workspace" id="convertWorkspace">
+        <div class="convert-ws-title">
+          <span id="cwIcon"></span>
+          <span id="cwTitle"></span>
+          <button onclick="closeConverter()" style="margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;">✕</button>
+        </div>
+        <div class="convert-drop" id="convertDrop">
+          <input type="file" id="convertFileInput" onchange="handleConvertFile(this)" />
+          <div class="convert-drop-text">
+            📁 Drop your file here or <b>click to browse</b>
+          </div>
+        </div>
+        <div class="progress-bar-wrap" id="convertProgress">
+          <div class="progress-bar" id="convertBar"></div>
+        </div>
+        <div class="convert-result" id="convertResult">
+          <span style="font-size:24px;">✅</span>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:14px;" id="convertResultName">output.pdf</div>
+            <div style="font-size:12px;color:var(--muted);">Conversion complete!</div>
+          </div>
+          <button class="btn-download" onclick="fakeDownload()">⬇ Download</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── PAYMENT ─── -->
+    <div class="section" id="sec-payment">
+      <div class="section-title">Checkout 💳</div>
+      <div class="section-sub">Review your order and make payment</div>
+
+      <div id="cartEmptyState" class="empty-state" style="display:none;">
+        <div class="empty-icon">🛒</div>
+        <p>Your cart is empty.<br>Go to <strong>New Order</strong> to add files.</p>
+        <button class="btn-primary" style="margin-top:16px;width:auto;padding:12px 28px;" onclick="switchSection('upload', document.querySelectorAll('.nav-item')[1])">+ New Order</button>
+      </div>
+
+      <div id="cartContent">
+        <div class="payment-layout">
+          <div class="order-summary">
+            <div class="summary-title">📋 Order Summary</div>
+            <div id="cartItems">
+              <!-- populated by JS -->
+            </div>
+            <div class="cost-display" style="margin-top:0;">
+              <div class="cost-label">Cart Total</div>
+              <div class="cost-value" id="cartTotal">₹0</div>
+            </div>
+          </div>
+
+          <div class="payment-card">
+            <div class="payment-title">💳 Payment</div>
+            <div class="price-breakdown">
+              <div class="price-row"><span>Subtotal</span><span id="paySubtotal">₹0</span></div>
+              <div class="price-row"><span>Binding</span><span id="payBinding">₹0</span></div>
+              <div class="price-row total"><span>Total</span><span class="amount" id="payTotal">₹0</span></div>
+            </div>
+
+            <div class="payment-methods">
+              <div class="pm-label">Select Payment Method</div>
+              <div class="pm-options">
+                <div class="pm-option selected" id="pm-upi" onclick="selectPM('upi')">
+                  <span class="pm-icon">📱</span>UPI
+                </div>
+                <div class="pm-option" id="pm-qr" onclick="selectPM('qr')">
+                  <span class="pm-icon">▦</span>QR Code
+                </div>
+                <div class="pm-option" id="pm-card" onclick="selectPM('card')">
+                  <span class="pm-icon">💳</span>Card
+                </div>
+                <div class="pm-option" id="pm-cash" onclick="selectPM('cash')">
+                  <span class="pm-icon">💵</span>Pay at Store
+                </div>
+              </div>
+            </div>
+
+            <div class="upi-input-area show" id="upiArea">
+              <label class="form-label">UPI ID</label>
+              <input class="upi-id-input" placeholder="yourname@upi" id="upiIdInput" />
+            </div>
+
+            <div class="upi-input-area" id="qrArea" style="text-align:center;">
+              <div style="background:var(--bg);border-radius:10px;padding:20px;display:inline-block;">
+                <div style="font-size:80px;line-height:1;">▦</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:8px;">Scan to pay via any UPI app</div>
+              </div>
+            </div>
+
+            <div class="upi-input-area" id="cardArea">
+              <label class="form-label">Card Number</label>
+              <input class="upi-id-input" placeholder="1234 5678 9012 3456" maxlength="19" style="margin-bottom:8px;" />
+              <div style="display:flex;gap:8px;">
+                <input class="upi-id-input" placeholder="MM/YY" maxlength="5" style="flex:1;" />
+                <input class="upi-id-input" placeholder="CVV" maxlength="3" style="flex:1;" />
+              </div>
+            </div>
+
+            <div class="upi-input-area" id="cashArea">
+              <div style="background:var(--bg);border-radius:10px;padding:14px;font-size:13px;color:var(--muted);line-height:1.6;">
+                💡 Your order will be prepared and ready for collection. Pay at the store counter when picking up.
+              </div>
+            </div>
+
+            <button class="btn-pay" onclick="processPayment()">
+              <span>🔒</span> Pay Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── ORDERS ─── -->
+    <div class="section" id="sec-orders">
+      <div class="section-title">My Orders 📋</div>
+      <div class="section-sub">Track all your print orders</div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">All Orders</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>File</th>
+              <th>Type</th>
+              <th>Pages</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="allOrdersBody">
+            <tr>
+              <td><code style="color:var(--accent);font-size:12px;">XQ-8821</code></td>
+              <td>Assignment_3.pdf</td>
+              <td>Standard B&W</td>
+              <td>12</td>
+              <td>₹12</td>
+              <td style="color:var(--muted);font-size:12px;">14 Apr 2026</td>
+              <td><span class="status-pill status-ready">Ready ✓</span></td>
+            </tr>
+            <tr>
+              <td><code style="color:var(--accent);font-size:12px;">XQ-8819</code></td>
+              <td>Slides_Unit4.pdf</td>
+              <td>Color</td>
+              <td>8</td>
+              <td>₹16</td>
+              <td style="color:var(--muted);font-size:12px;">13 Apr 2026</td>
+              <td><span class="status-pill status-pending">Pending</span></td>
+            </tr>
+            <tr>
+              <td><code style="color:var(--accent);font-size:12px;">XQ-8801</code></td>
+              <td>Lab_Report.docx</td>
+              <td>Standard B&W</td>
+              <td>5</td>
+              <td>₹5</td>
+              <td style="color:var(--muted);font-size:12px;">10 Apr 2026</td>
+              <td><span class="status-pill status-collected">Collected</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- end main-content -->
+</div><!-- end dashPage -->
+
+<!-- ═══════════════════════════════════
+     SUCCESS MODAL
+═══════════════════════════════════ -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal">
+    <div class="modal-icon">🎉</div>
+    <div class="modal-title">Order Placed!</div>
+    <div class="modal-sub">Your print order has been sent to the campus store. Show this ID when collecting your copies.</div>
+    <div class="order-id-box" id="modalOrderId">XQ-0000</div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="closeModal()">Done</button>
+      <button class="btn-outline" onclick="goToOrders()">View All Orders</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span id="toastIcon">✅</span>
+  <span id="toastMsg">Done!</span>
+</div>
+
+<script>
+// ═══════════════════ STATE ═══════════════════
+let currentUser = null;
+let printType = 'bw';
+let paperSize = 'a4';
+let bindType = 'none';
+let cart = [];
+let uploadedFiles = [];
+
+// ═══════════════════ AUTH ═══════════════════
+function doLogin() {
+  const roll = document.getElementById('rollInput').value.trim().toUpperCase();
+  const pass = document.getElementById('passInput').value.trim();
+  
+  if (!roll) { showToast('Please enter your roll number', 'error'); return; }
+  if (!pass) { showToast('Please enter your password', 'error'); return; }
+  if (roll.length < 5) { showToast('Invalid roll number format', 'error'); return; }
+  
+  loginUser(roll);
+}
+
+function demoLogin() { 
+  loginUser('22CS1234'); 
+}
+
+function loginUser(roll) {
+  currentUser = roll;
+  document.getElementById('sidebarName').textContent = roll;
+  document.getElementById('sidebarAvatar').textContent = roll.charAt(0).toUpperCase();
+  document.getElementById('homeWelcome').textContent = `Welcome, ${roll}! Here's your print activity.`;
+  
+  // Clear login fields
+  document.getElementById('rollInput').value = '';
+  document.getElementById('passInput').value = '';
+  
+  document.getElementById('loginPage').classList.remove('active');
+  document.getElementById('dashPage').classList.add('active');
+  showToast(`✅ Logged in as ${roll}`, 'success');
+}
+
+function logout() {
+  currentUser = null;
+  cart = [];
+  uploadedFiles = [];
+  document.getElementById('dashPage').classList.remove('active');
+  document.getElementById('loginPage').classList.add('active');
+  document.getElementById('rollInput').focus();
+  showToast('Logged out successfully', 'success');
+}
+
+// ═══════════════════ NAVIGATION ═══════════════════
+function switchSection(name, el) {
+  if (!currentUser) {
+    showToast('Please login first', 'error');
+    return;
+  }
+  
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  
+  if (name === 'payment') {
+    refreshCart();
+    if (cart.length === 0) {
+      showToast('Add items to cart from New Order section', 'info');
+    }
+  }
+}
+
+// ═══════════════════ UPLOAD & PRINT OPTIONS ═══════════════════
+const fileIcons = { pdf:'📄', doc:'📝', docx:'📝', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', ppt:'📊', pptx:'📊' };
+
+// Enhanced error handling for file uploads
+function handleFiles(files) {
+  const maxFileSize = 20 * 1024 * 1024; // 20MB
+  const allowedTypes = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'ppt', 'pptx'];
+  let validFilesCount = 0;
+
+  Array.from(files).forEach(f => {
+    const ext = f.name.split('.').pop().toLowerCase();
+    if (!allowedTypes.includes(ext)) {
+      showToast(`Invalid file type: ${f.name}. Allowed: PDF, DOC, DOCX, PPT, JPG, PNG`, 'error');
+      return;
+    }
+    if (f.size > maxFileSize) {
+      showToast(`File too large: ${f.name}. Max 20MB per file`, 'error');
+      return;
+    }
+
+    uploadedFiles.push(f);
+    validFilesCount++;
+    const icon = fileIcons[ext] || '📁';
+    const size = (f.size / 1024).toFixed(0) + ' KB';
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    div.innerHTML = `<span class="file-icon">${icon}</span>
+      <span class="file-name">${f.name}</span>
+      <span class="file-size">${size}</span>
+      <button class="file-remove" onclick="removeFile(this, '${f.name}')">✕</button>`;
+    document.getElementById('uploadedFiles').appendChild(div);
+  });
+
+  if (validFilesCount > 0) {
+    showToast(`${validFilesCount} file(s) added successfully`, 'success');
+  }
+}
+
+function removeFile(btn, name) {
+  uploadedFiles = uploadedFiles.filter(f => f.name !== name);
+  btn.closest('.file-item').remove();
+}
+
+// Drag-drop
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+
+function selectType(t) {
+  printType = t;
+  document.getElementById('bwBtn').classList.toggle('selected', t === 'bw');
+  document.getElementById('colorBtn').classList.toggle('selected', t === 'color');
+  updateCost();
+}
+
+function selectPaper(p) {
+  paperSize = p;
+  ['a4Btn','a3Btn','letBtn'].forEach(id => document.getElementById(id).classList.remove('selected'));
+  document.getElementById({a4:'a4Btn',a3:'a3Btn',letter:'letBtn'}[p]).classList.add('selected');
+}
+
+function selectBind(b) {
+  bindType = b;
+  ['noBindBtn','spiralBtn','stapleBtn'].forEach(id => document.getElementById(id).classList.remove('selected'));
+  document.getElementById({none:'noBindBtn',spiral:'spiralBtn',staple:'stapleBtn'}[b]).classList.add('selected');
+  updateCost();
+}
+
+function changeCopies(d) {
+  const el = document.getElementById('copiesVal');
+  el.value = Math.max(1, Math.min(50, parseInt(el.value)||1) + d);
+  updateCost();
+}
+
+function changePages(d) {
+  const el = document.getElementById('pagesVal');
+  el.value = Math.max(1, Math.min(500, parseInt(el.value)||1) + d);
+  updateCost();
+}
+
+function updateCost() {
+  const pages = parseInt(document.getElementById('pagesVal').value) || 1;
+  const copies = parseInt(document.getElementById('copiesVal').value) || 1;
+  const rate = printType === 'color' ? 2 : 1;
+  const binding = bindType === 'spiral' ? 15 : bindType === 'staple' ? 2 : 0;
+  const total = (pages * copies * rate) + binding;
+  const bindLabel = binding > 0 ? ` + ₹${binding} binding` : '';
+  document.getElementById('costDisplay').textContent = '₹' + total;
+  document.getElementById('costBreakdown').textContent = `${pages} pages × ${copies} copies × ₹${rate}${bindLabel}`;
+}
+
+function addToCart() {
+  if (uploadedFiles.length === 0) { showToast('Please upload at least one file', 'error'); return; }
+  const pages = parseInt(document.getElementById('pagesVal').value) || 1;
+  const copies = parseInt(document.getElementById('copiesVal').value) || 1;
+  const rate = printType === 'color' ? 2 : 1;
+  const binding = bindType === 'spiral' ? 15 : bindType === 'staple' ? 2 : 0;
+  const total = (pages * copies * rate) + binding;
+
+  let itemsAdded = 0;
+  uploadedFiles.forEach(f => {
+    cart.push({
+      id: Date.now() + Math.random(),
+      name: f.name,
+      type: printType,
+      paper: paperSize,
+      binding: bindType,
+      pages, copies, rate, binding, total
+    });
+    itemsAdded++;
+  });
+
+  showToast(`✅ ${itemsAdded} item(s) added to cart!`, 'success');
+  
+  // Reset form
+  uploadedFiles = [];
+  document.getElementById('uploadedFiles').innerHTML = '';
+  document.getElementById('fileInput').value = '';
+  
+  // Reset print settings to defaults
+  selectType('bw');
+  selectPaper('a4');
+  selectBind('none');
+  document.getElementById('copiesVal').value = '1';
+  document.getElementById('pagesVal').value = '1';
+  updateCost();
+
+  // Switch to payment after a moment
+  setTimeout(() => {
+    const payNav = document.querySelectorAll('.nav-item')[3];
+    switchSection('payment', payNav);
+  }, 800);
+}
+
+// ═══════════════════ CART / PAYMENT ═══════════════════
+function refreshCart() {
+  const cartItems = document.getElementById('cartItems');
+  const emptyState = document.getElementById('cartEmptyState');
+  const cartContent = document.getElementById('cartContent');
+
+  if (cart.length === 0) {
+    emptyState.style.display = 'block';
+    cartContent.style.display = 'none';
+    return;
+  }
+  emptyState.style.display = 'none';
+  cartContent.style.display = 'block';
+
+  cartItems.innerHTML = '';
+  let subtotal = 0;
+  let bindingTotal = 0;
+
+  cart.forEach(item => {
+    const printCost = item.pages * item.copies * item.rate;
+    subtotal += printCost;
+    bindingTotal += item.binding;
+    const typeLabel = item.type === 'color' ? '🌈 Color' : '⬛ B&W';
+    const bindLabel = item.binding > 0 ? ` · ${item.binding > 2 ? 'Spiral' : 'Staple'} binding` : '';
+    cartItems.innerHTML += `
+      <div class="summary-item">
+        <span class="summary-file-icon">${fileIcons[item.name.split('.').pop().toLowerCase()] || '📁'}</span>
+        <div class="summary-file-info">
+          <div class="summary-file-name">${item.name}</div>
+          <div class="summary-file-meta">${typeLabel} · ${item.pages} pages · ${item.copies} cop${item.copies > 1 ? 'ies' : 'y'} · ${item.paper.toUpperCase()}${bindLabel}</div>
+        </div>
+        <div class="summary-file-cost">₹${item.total}</div>
+      </div>`;
+  });
+
+  const total = subtotal + bindingTotal;
+  document.getElementById('cartTotal').textContent = '₹' + total;
+  document.getElementById('paySubtotal').textContent = '₹' + subtotal;
+  document.getElementById('payBinding').textContent = '₹' + bindingTotal;
+  document.getElementById('payTotal').textContent = '₹' + total;
+}
+
+function selectPM(method) {
+  ['upi','qr','card','cash'].forEach(m => {
+    document.getElementById('pm-' + m).classList.remove('selected');
+    document.getElementById(m + 'Area').classList.remove('show');
+  });
+  document.getElementById('pm-' + method).classList.add('selected');
+  document.getElementById(method + 'Area').classList.add('show');
+}
+
+function processPayment() {
+  if (cart.length === 0) { showToast('Cart is empty!', 'error'); return; }
+  
+  // Validate based on selected payment method
+  const pmUpi = document.getElementById('pm-upi').classList.contains('selected');
+  const pmCard = document.getElementById('pm-card').classList.contains('selected');
+  const upiId = document.getElementById('upiIdInput').value.trim();
+  
+  if (pmUpi && !upiId) { showToast('Please enter a valid UPI ID', 'error'); return; }
+  
+  // Show info about payment
+  showToast('⚠️ Demo mode: Payment processing disabled. Order created locally.', 'success');
+  
+  const orderId = 'XQ-' + Math.floor(1000 + Math.random() * 9000);
+  const tbody = document.getElementById('ordersTableBody');
+  const allTbody = document.getElementById('allOrdersBody');
+  const today = new Date().toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+
+  cart.forEach(item => {
+    const row = `<tr>
+      <td><code style="color:var(--accent);font-size:12px;">${orderId}</code></td>
+      <td>${item.name}</td>
+      <td>${item.type === 'color' ? 'Color' : 'Standard B&W'}</td>
+      <td>${item.pages}</td>
+      <td>₹${item.total}</td>
+      <td><span class="status-pill status-pending">Pending</span></td>
+    </tr>`;
+    tbody.insertAdjacentHTML('afterbegin', row);
+
+    const row2 = `<tr>
+      <td><code style="color:var(--accent);font-size:12px;">${orderId}</code></td>
+      <td>${item.name}</td>
+      <td>${item.type === 'color' ? 'Color' : 'Standard B&W'}</td>
+      <td>${item.pages}</td>
+      <td>₹${item.total}</td>
+      <td style="color:var(--muted);font-size:12px;">${today}</td>
+      <td><span class="status-pill status-pending">Pending</span></td>
+    </tr>`;
+    allTbody.insertAdjacentHTML('afterbegin', row2);
+  });
+
+  // Update stats
+  const totalEl = document.getElementById('statTotal');
+  const pendingEl = document.getElementById('statPending');
+  const spentEl = document.getElementById('statSpent');
+  totalEl.textContent = parseInt(totalEl.textContent) + cart.length;
+  pendingEl.textContent = parseInt(pendingEl.textContent) + 1;
+  const spent = parseInt(spentEl.textContent.replace('₹','')) + cart.reduce((a,b) => a+b.total, 0);
+  spentEl.textContent = '₹' + spent;
+  document.getElementById('orderCountBadge').textContent = totalEl.textContent + ' orders';
+
+  cart = [];
+  document.getElementById('modalOrderId').textContent = orderId;
+  document.getElementById('successModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('successModal').classList.remove('show');
+  refreshCart();
+}
+function goToOrders() {
+  closeModal();
+  const ordersNav = document.querySelectorAll('.nav-item')[4];
+  switchSection('orders', ordersNav);
+}
+
+// ═══════════════════ CONVERTER ═══════════════════
+const converterConfig = {
+  'jpg-pdf': { icon:'🖼️', title:'JPG to PDF', accept:'.jpg,.jpeg,.png', output:'converted.pdf' },
+  'pdf-jpg': { icon:'📄', title:'PDF to JPG', accept:'.pdf', output:'page_1.jpg' },
+  'word-pdf': { icon:'📝', title:'Word to PDF', accept:'.doc,.docx', output:'document.pdf' },
+  'compress': { icon:'📦', title:'Compress PDF', accept:'.pdf', output:'compressed.pdf' },
+  'merge': { icon:'📎', title:'Merge PDFs', accept:'.pdf', output:'merged.pdf', multiple: true },
+  'rotate': { icon:'🔃', title:'Rotate PDF', accept:'.pdf', output:'rotated.pdf' },
+};
+
+let activeConverter = null;
+
+function openConverter(type) {
+  activeConverter = type;
+  const cfg = converterConfig[type];
+  document.getElementById('cwIcon').textContent = cfg.icon;
+  document.getElementById('cwTitle').textContent = cfg.title;
+  
+  const convertInput = document.getElementById('convertFileInput');
+  convertInput.accept = cfg.accept;
+  if (cfg.multiple) convertInput.setAttribute('multiple', '');
+  else convertInput.removeAttribute('multiple');
+  
+  document.getElementById('convertWorkspace').classList.add('show');
+  document.getElementById('convertProgress').classList.remove('show');
+  document.getElementById('convertResult').classList.remove('show');
+  document.getElementById('convertBar').style.width = '0';
+  convertInput.value = '';
+  
+  document.getElementById('convertWorkspace').scrollIntoView({ behavior: 'smooth' });
+  setTimeout(() => convertInput.focus(), 500);
+}
+
+function closeConverter() {
+  document.getElementById('convertWorkspace').classList.remove('show');
+  activeConverter = null;
+}
+
+function handleConvertFile(input) {
+  if (!input.files.length) return;
+  const cfg = converterConfig[activeConverter];
+  const progress = document.getElementById('convertProgress');
+  const bar = document.getElementById('convertBar');
+  const result = document.getElementById('convertResult');
+  const file = input.files[0];
+
+  // Validate file
+  const ext = file.name.split('.').pop().toLowerCase();
+  const allowedExts = cfg.accept.split(',').map(e => e.trim().replace('.', ''));
+  
+  if (!allowedExts.includes(ext)) {
+    showToast(`Invalid file type. Expected: ${cfg.accept}`, 'error');
+    return;
+  }
+
+  if (file.size > 50 * 1024 * 1024) { // 50MB limit
+    showToast('File too large. Max 50MB for conversions', 'error');
+    return;
+  }
+
+  progress.classList.add('show');
+  result.classList.remove('show');
+  bar.style.width = '0';
+
+  let pct = 0;
+  const interval = setInterval(() => {
+    pct += Math.random() * 15 + 8;
+    if (pct >= 100) { 
+      pct = 100; 
+      clearInterval(interval);
+      setTimeout(() => {
+        document.getElementById('convertResultName').textContent = cfg.output;
+        result.classList.add('show');
+        progress.classList.remove('show');
+        showToast('✅ Conversion complete!', 'success');
+      }, 300);
+    }
+    bar.style.width = pct + '%';
+  }, 180);
+}
+
+function fakeDownload() {
+  const cfg = converterConfig[activeConverter];
+  // Simulate download with a realistic blob
+  const content = `XeroQ File Conversion Output\n` +
+    `File: ${cfg.output}\n` +
+    `Type: ${cfg.title}\n` +
+    `Date: ${new Date().toLocaleString('en-IN')}\n` +
+    `Status: Ready for printing`;
+  
+  const blob = new Blob([content], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = cfg.output;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast(`✅ ${cfg.output} downloaded!`, 'success');
+}
+
+// ═══════════════════ TOAST ═══════════════════
+let toastTimer = null;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  
+  const icons = {
+    'success': '✅',
+    'error': '❌',
+    'info': 'ℹ️'
+  };
+  document.getElementById('toastIcon').textContent = icons[type] || icons['success'];
+  
+  t.className = 'toast show ' + (type || 'success');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ═══════════════════ INIT ═══════════════════
+function initApp() {
+  updateCost();
+  setupAdvancedFeatures();
+}
+
+function setupAdvancedFeatures() {
+  // Add input validation for number fields
+  const numInputs = document.querySelectorAll('.num-val');
+  numInputs.forEach(input => {
+    input.addEventListener('change', () => {
+      const max = parseInt(input.max);
+      const min = parseInt(input.min);
+      const val = parseInt(input.value) || min;
+      input.value = Math.max(min, Math.min(max, val));
+      updateCost();
+    });
+  });
+
+  // Initialize payment method display
+  selectPM('upi');
+  
+  // Add keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && activeConverter) {
+      closeConverter();
+    }
+  });
+}
+
+// Init on page load
+initApp();
+</script>
+</body>
+</html>
